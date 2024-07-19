@@ -1,4 +1,4 @@
 __pycache__ 
-user/jsonfiles/userdata.json
-user/jsonfiles/username.json
-user/jsonfiles/user_var.json
+userdata.json
+username.json
+user_var.json
