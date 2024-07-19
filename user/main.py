@@ -9,14 +9,24 @@ import hashlib
 from datetime import datetime
 import json
 import pickle
+import  re
+
 
 user_cmd = None
 user_var = []
+reset = 0
+movies = []
 
 
 make_sure_user_set_password = 0
 make_sure_user_craete_ac = 0
 make_sure_user_set_username = 0
+
+try:
+    with open('cinama/cinama.json', 'r') as u:
+        movies = json.load(u)
+except:
+    pass
 
  
 try:
@@ -57,7 +67,7 @@ def check_password(stored_password: str, salt: str, provided_password: str) -> b
 
 while True:
     user_cmd = int(input("Please Enter your command: \n" + \
-                         "0. exit the program \n1. Create Account \n2. Log in\n=> "))
+                         "0. exit the program \n1. Create Account \n2. Log in\n3. Reset\n=> "))
     if user_cmd == 0:
         os.system("clear")
         break
@@ -81,8 +91,21 @@ while True:
             else:
                 print("password must have more than 4 charactar....")
         os.system("clear")
-        birth = input("Please Enter your birth date -> [Y/M/D]:")
-        user_var[(len(user_var) - 1)].birthday1 = birth
+        date_pattern = re.compile(r"^\d{4}/\d{2}/\d{2}$")
+    
+        while True:
+            birthdate_str = input("Please enter your birthdate in the format yyyy/mm/dd: ")
+        
+            if not date_pattern.match(birthdate_str):
+                print("Incorrect date format. Please try again.")
+                
+            try:
+                birthdate = datetime.strptime(birthdate_str, "%Y/%m/%d")
+                print("Your birthdate has been successfully recorded:", birthdate.strftime("%Y/%m/%d"))
+                user_var[(len(user_var) - 1)].birthday1 = birthdate
+                break 
+            except ValueError:
+                print("Invalid date. Please try again.")        
         os.system("clear") 
         phnum = input("Enter your phone number\n=>")
         os.system("clear")
@@ -104,7 +127,9 @@ while True:
         try:   
             index = User.user_names.index(end_user)
         except:
-            pass
+            print("something went wrong...\nplease try again")
+            break
+        
         
         if end_user ==  user_var[index].username1  and end_pass == user_var[index].password1:   
             salt = generate_salt()
@@ -113,7 +138,7 @@ while True:
             os.system("clear") 
             while True:
                 cmd = int(input("Please Enter your command:\n1.Display your information\n" + \
-                                "2.Edit your information\n3.Change password\n4.Bank operation \n5.Log out \n=> "))
+                                "2.Edit your information\n3.Change password\n4.Bank operation \n5.Buying ticket\n6.Log out \n=> "))
                 if cmd == 1:
                     os.system("clear")
                     print(user_var[index].__str__())
@@ -219,31 +244,31 @@ while True:
                         elif c3 == "6":
                             os.system("clear")
                             cm = int(input("Which one do you want to buy...\n0.back\n1.Bronze --> 10000\n[It is a basic and simple default service  and does not have special privileges.]\n2.Silver --> 20000\n[This service returns 20% of the amount of each transaction to the wallet for up to three future purchases.]\n3.Gold --> 30000\n[This service rewards 50 percent of the amount plus a free energy drink for the next month.]\n=>"))
-                        while True:    
-                            if cm == 0:
-                                break
+                            while True:    
+                                if cm == 0:
+                                    break
                             
-                            elif cm == 1:
-                                if user_var[index].wallet_balance1 >= 10000:  
-                                    user_var[index].wallet_balance1 -= 10000
-                                    user_var[index].subscription = 1
-                                    break 
+                                elif cm == 1:
+                                    if user_var[index].wallet_balance1 >= 10000:  
+                                        user_var[index].wallet_balance1 -= 10000
+                                        user_var[index].subscription = "Bronze"
+                                        break 
+                                    else:
+                                        print("Insufficient inventory...")
+                                elif cm == 2:
+                                    if user_var[index].wallet_balance1 >= 20000: 
+                                        user_var[index].wallet_balance1 -= 20000
+                                        user_var[index].subscription = "Silver"
+                                        break  
+                                    else:
+                                        print("Insufficient inventory...")
+                                elif cm == 3:
+                                    if user_var[index].wallet_balance1 >= 30000:     
+                                        user_var[index].wallet_balance1 -= 30000
+                                        user_var[index].subscription = "Gold"
+                                        break  
                                 else:
-                                    print("Insufficient inventory")
-                            elif cm == 2:
-                                if user_var[index].wallet_balance1 >= 20000: 
-                                    user_var[index].wallet_balance1 -= 20000
-                                    user_var[index].subscription = 2
-                                    break  
-                                else:
-                                    print("Insufficient inventory")
-                            elif cm == 3:
-                               if user_var[index].wallet_balance1 >= 30000:     
-                                    user_var[index].wallet_balance1 -= 30000
-                                    user_var[index].subscription = 3
-                                    break  
-                               else:
-                                    print("Insufficient inventory")
+                                    print("Insufficient inventory...")
                             else:
                                 print("invalid command...")
                         else:
@@ -258,6 +283,70 @@ while True:
                             os.system("clear")
                         print("Wrong cvv2...!")
                 elif cmd == 5:
+                    os.system("clear")                    
+                    for i in range(len(movies)):
+                        print(f"{i+1}.\nMovie name --> {movies[i]['movie']}\nAges --> {movies[i]['ages']}\nCapacity --> {movies[i]['capacity']}\nPrice --> {movies[i]['price']}")
+                        print("\n\n")
+                    mo_cmd = int(input("Which one do you want to buy?...[0.back]\n=>"))
+                    while True:
+                        today = datetime.today()
+                        age = today.year - user_var[index].birthday1.year - ((today.month, today.day) < (user_var[index].birthday1.month, user_var[index].birthday1.day))
+                        if mo_cmd == 0:
+                            break
+                        if int(movies[i]['ages']) <= age:
+                            if int(movies[i]['capacity']) != 0:
+                                if int(movies[i]['price']) <= user_var[index].wallet_balance1:
+                                    if user_var[index].subscription == "Bronze":
+                                        user_var[index].wallet_balance1 -= int(movies[i]['price'])
+                                        user_var[index].ticket.append(movies[i])
+                                        os.system("clear")
+                                        user_var[index].Bronze() 
+                                        print("\n")
+                                        print("The purchase process has been completed successfully")
+                                        c5 = input("Enter '0' to pass....")
+                                        if c5=="0":
+                                            os.system("clear")    
+                                            break
+                                    
+                                    elif user_var[index].subscription == "Silver":
+                                        user_var[index].wallet_balance1 -= int(movies[i]['price'])
+                                        user_var[index].ticket.append(movies[i])
+                                        os.system("clear")
+                                        user_var[index].Silver(int(movies[i]['price'])
+)
+                                        print("\n")
+                                        print("The purchase process has been completed successfully")
+                                        c5 = input("Enter '0' to pass....")
+                                        if c5=="0":
+                                            os.system("clear")    
+                                            break
+
+
+                                    elif user_var[index].subscription == "Gold":
+                                        user_var[index].wallet_balance1 -= int(movies[i]['price'])
+                                        user_var[index].ticket.append(movies[i])
+                                        os.system("clear")
+                                        user_var[index].Gold(int(movies[i]['price'])
+)
+                                        print("\n")
+                                        print("The purchase process has been completed successfully")
+                                        c5 = input("Enter '0' to pass....")
+                                        if c5=="0":
+                                            os.system("clear")    
+                                            break
+
+                                    else:
+                                        print("something went wrong...please try again")
+                                else:
+                                    print("Insufficient inventory...")
+                            else:
+                                print("Sorry, the capacity of the hall is full")
+                        else:
+                            print("your age is not allowed...")
+
+                
+
+                elif cmd == 6:
                     os.system("clear") 
                     print("Log out...")
                     break
@@ -266,8 +355,7 @@ while True:
                     os.system("clear") 
                     print("Warning: invalid command...")
                     break 
-
-
+            
         elif user_cmd == 2 and make_sure_user_craete_ac == 0:
             print("Warning: first with '1' command Create account and try again ...")
             os.system("clear")
@@ -286,9 +374,17 @@ while True:
             break
         
 
+    elif user_cmd == 3:
+        reset = 1
+        os.system("rm -rf jsonfiles")
+        os.makedirs("jsonfiles")
+        os.system("echo '[]' > jsonfiles/username.json")
+        os.system("echo '[]' > jsonfiles/user_var.json")
+        os.system("echo '[]' > jsonfiles/userdata.json")
+        os.system("clear")
+if reset == 0:
+    with open('jsonfiles/username.json', 'w') as un:
+        json.dump(User.user_names, un)
 
-with open('jsonfiles/username.json', 'w') as un:
-    json.dump(User.user_names, un)
-
-with open('jsonfiles/user_var.json', 'wb') as uv:
-    pickle.dump(user_var, uv)
+    with open('jsonfiles/user_var.json', 'wb') as uv:
+        pickle.dump(user_var, uv)

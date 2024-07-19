@@ -1,1 +1,1 @@
-{"Movie": "godfather", "ages": 18}
+[{"movie": "godfather", "ages": 18, "capacity": 30, "price": 30000}, {"movie": "interstaller", "ages": 17, "capacity": 35, "price": 40000}]
