@@ -26,7 +26,11 @@ try:
     with open('cinama/cinama.json', 'r') as u:
         movies = json.load(u)
 except:
-    pass
+    os.system("rm -rf jsonfiles")
+    os.makedirs("jsonfiles")
+    os.system("echo '[]' > jsonfiles/username.json")
+    os.system("echo '[]' > jsonfiles/user_var.json")
+    os.system("echo '[]' > jsonfiles/userdata.json")
 
  
 try:
@@ -67,7 +71,7 @@ def check_password(stored_password: str, salt: str, provided_password: str) -> b
 
 while True:
     user_cmd = int(input("Please Enter your command: \n" + \
-                         "0. exit the program \n1. Create Account \n2. Log in\n3. Reset\n=> "))
+                         "0. exit the program \n1. Create Account \n2. Log in\n=> "))
     if user_cmd == 0:
         os.system("clear")
         break
@@ -374,17 +378,9 @@ while True:
             break
         
 
-    elif user_cmd == 3:
-        reset = 1
-        os.system("rm -rf jsonfiles")
-        os.makedirs("jsonfiles")
-        os.system("echo '[]' > jsonfiles/username.json")
-        os.system("echo '[]' > jsonfiles/user_var.json")
-        os.system("echo '[]' > jsonfiles/userdata.json")
-        os.system("clear")
-if reset == 0:
-    with open('jsonfiles/username.json', 'w') as un:
-        json.dump(User.user_names, un)
+    
+with open('jsonfiles/username.json', 'w') as un:
+    json.dump(User.user_names, un)
 
-    with open('jsonfiles/user_var.json', 'wb') as uv:
-        pickle.dump(user_var, uv)
+with open('jsonfiles/user_var.json', 'wb') as uv:
+    pickle.dump(user_var, uv)
